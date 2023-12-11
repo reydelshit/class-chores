@@ -48,6 +48,11 @@ type PatientType = {
 }
 
 export default function App() {
+  const type = localStorage.getItem('chores_type')
+  if (type === 'student') {
+    return (window.location.href = '/student/sched')
+  }
+
   const [state, setState] = useState({
     weekendsVisible: true,
     currentEvents: [],
@@ -58,8 +63,6 @@ export default function App() {
   const [selectInfo, setSelectInfo] = useState({} as any)
   const [scheduled, setScheduled] = useState<EventInput[]>([])
   const [selectedGroup, setSelectedGroup] = useState('')
-
-  const [patientID, setPatientID] = useState(0)
 
   const getSchedule = async () => {
     await axios
@@ -132,7 +135,7 @@ export default function App() {
     axios
       .post(`${import.meta.env.VITE_CLASS_CHORES}/notification.php`, {
         receiver_id: parseInt(selectedGroup.split(' ')[1]),
-        sender_id: localStorage.getItem('user'),
+        sender_id: localStorage.getItem('chores'),
         notification_message: `You have a new schedule on ${moment(
           startDate,
         ).format('lll')} ${title}`,

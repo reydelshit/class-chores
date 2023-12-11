@@ -5,7 +5,11 @@ import Header from '@/components/Header'
 
 export default function Root() {
   const location = useLocation()
-
+  const handleLogout = () => {
+    localStorage.removeItem('chores')
+    localStorage.removeItem('chores_type')
+    window.location.href = '/login'
+  }
   return (
     <div className="w-full ">
       <Header />
@@ -15,7 +19,7 @@ export default function Root() {
         </div>
       </div>
       <div className="fixed bottom-10 left-5">
-        <Button>Logout</Button>
+        <Button onClick={handleLogout}>Logout</Button>
       </div>
     </div>
   )

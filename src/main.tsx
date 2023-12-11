@@ -5,6 +5,8 @@ import './index.css'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Root from './root/Root.tsx'
 import Student from './components/Student.tsx'
+import Login from './components/Login.tsx'
+import StudentSched from './components/student/StudentSched.tsx'
 
 const router = createBrowserRouter([
   {
@@ -18,10 +20,15 @@ const router = createBrowserRouter([
     ],
   },
 
-  // {
-  //   path: '/login',
-  //   element: <Login />,
-  // },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+
+  {
+    path: '/student/sched',
+    element: <StudentSched />,
+  },
 ])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

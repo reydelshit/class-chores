@@ -177,9 +177,21 @@ export default function Student() {
       })
   }
 
+  const handleExport = () => {
+    const printableArea = document.getElementById('divToPrint')
+    const printContents = printableArea!.innerHTML
+    const originalContents = document.body.innerHTML
+
+    document.body.innerHTML = printContents
+
+    window.print()
+
+    document.body.innerHTML = originalContents
+  }
+
   return (
-    <div className="flex justify-center items-center w-full h-screen relative">
-      <div className="flex w-[80%] justify-around gap-[10rem] p-4">
+    <div className="flex justify-center items-center w-full h-[70vh] relative">
+      <div className="flex w-[80%] justify-around gap-[10rem] p-4 ">
         <div className="w-[40rem] h-fit p-4 rounded-xl">
           <form onSubmit={handleSubmit}>
             <div className="my-2">
@@ -237,14 +249,19 @@ export default function Student() {
 
             {username.length > 0 && (
               <div className="my-4 flex justify-between bg-green-500 p-2 text-white rounded-lg">
-                <div>
+                <div id="divToPrint">
                   <Label>Account</Label>
                   <div className="flex flex-col">
                     <Label>Username: {username}</Label>
                     <Label>Password: {password}</Label>
                   </div>
                 </div>
-                <Button className="bg-white text-green-500">Export</Button>
+                <Button
+                  onClick={handleExport}
+                  className="bg-white text-green-500"
+                >
+                  Export
+                </Button>
               </div>
             )}
 
