@@ -29,6 +29,7 @@ import axios from 'axios'
 
 import moment from 'moment'
 import { Link } from 'react-router-dom'
+import Header from './components/Header'
 // import DefaultProfile from '@/assets/default.jpg'
 type PatientType = {
   patient_id: number
@@ -237,11 +238,7 @@ export default function App() {
   }
 
   return (
-    <div className="relative flex justify-center items-center h-screen">
-      {/* <Header
-        title="Schedule Appointment"
-        description="Assign appointment to patients"
-      /> */}
+    <div className="relative flex flex-col items-center h-screen w-full">
       {addAppointment && (
         <div className="w-full bg-white bg-opacity-90 z-20 absolute my-auto p-2 h-full flex justify-center ">
           <div className=" w-[30rem] flex-col flex gap-2 my-5 border-2 p-4 bg-white rounded-md h-fit mt-[12rem]">
@@ -300,7 +297,7 @@ export default function App() {
         </div>
       )}
 
-      <div className="flex gap-4 w-[80%]">
+      <div className="flex gap-4 w-[80%] mt-[5rem]">
         {renderSidebar()}
         <div className="w-full">
           {scheduled.length > 0 && (
@@ -311,8 +308,8 @@ export default function App() {
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay',
               }}
-              eventBackgroundColor="orange"
-              eventBorderColor="orange"
+              eventBackgroundColor="green"
+              eventBorderColor="green"
               initialView="dayGridMonth"
               editable={true}
               selectable={true}

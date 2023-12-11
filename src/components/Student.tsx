@@ -25,6 +25,7 @@ type StudentType = {
   studentLast: string
   image: string
   groupAssigned: string
+  student_id: number
 }
 
 type EventChange =
@@ -45,6 +46,8 @@ export default function Student() {
   const [students, setStudents] = useState<StudentType[]>([])
   const [search, setSearch] = useState('')
   const [filteredGroups, setFilteredGroups] = useState('')
+  const [showUpdateForm, setShowUpdateForm] = useState(false)
+  const [studentID, setStudentID] = useState(0)
 
   const getAllStudents = () => {
     axios
@@ -76,10 +79,7 @@ export default function Student() {
         console.log(res.data)
         getAllStudents()
 
-        setStudentDetails({
-          studentFirst: '',
-          studentLast: '',
-        })
+        window.location.reload()
       })
   }
 
@@ -125,10 +125,62 @@ export default function Student() {
     setFilteredGroups(value)
   }
 
+  const handleDelete = (id: number) => {
+    axios
+      .delete(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
+        data: {
+          id,
+        },
+      })
+      .then((res) => {
+        console.log(res.data)
+        getAllStudents()
+      })
+  }
+
+  const handleShowsUpdateForm = (id: number) => {
+    setShowUpdateForm(true)
+    setStudentID(id)
+    axios
+      .get(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
+        params: { student_id: id },
+      })
+      .then((res) => {
+        console.log(res.data)
+        setStudentDetails(res.data[0])
+        setImage(res.data[0].image)
+        setGroup(res.data[0].groupAssigned)
+      })
+  }
+
+  const handleSubmitUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('dsadas')
+    e.preventDefault()
+    axios
+      .put(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        ...studentDetails,
+        image: image.length > 0 ? image : image,
+        groupAssigned: group.length > 0 ? group : group,
+        type: 'student',
+        student_id: studentID,
+      })
+      .then((res) => {
+        console.log(res.data)
+        getAllStudents()
+
+        setShowUpdateForm(false)
+
+        // window.location.reload()
+      })
+  }
+
   return (
-    <div className="flex justify-center items-center w-full h-screen">
+    <div className="flex justify-center items-center w-full h-screen relative">
       <div className="flex w-[80%] justify-around gap-[10rem] p-4">
-        <div className="w-[40rem] h-fit bg-green-100 p-4 rounded-xl">
+        <div className="w-[40rem] h-fit p-4 rounded-xl">
           <form onSubmit={handleSubmit}>
             <div className="my-2">
               <Label>Image</Label>
@@ -183,8 +235,8 @@ export default function Student() {
               </Select>
             </div>
 
-            {studentDetails.studentFirst.length > 0 && (
-              <div className="my-4 flex justify-between">
+            {username.length > 0 && (
+              <div className="my-4 flex justify-between bg-green-500 p-2 text-white rounded-lg">
                 <div>
                   <Label>Account</Label>
                   <div className="flex flex-col">
@@ -192,7 +244,7 @@ export default function Student() {
                     <Label>Password: {password}</Label>
                   </div>
                 </div>
-                <Button>Export</Button>
+                <Button className="bg-white text-green-500">Export</Button>
               </div>
             )}
 
@@ -264,8 +316,20 @@ export default function Student() {
 
                       <TableCell>{student.groupAssigned}</TableCell>
                       <TableCell>
-                        <Button className="bg-green-500 mr-2">Edit</Button>
-                        <Button className="bg-red-500 ">Delete</Button>
+                        <Button
+                          onClick={() =>
+                            handleShowsUpdateForm(student.student_id)
+                          }
+                          className="bg-green-500 mr-2"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(student.student_id)}
+                          className="bg-red-500 "
+                        >
+                          Delete
+                        </Button>
                       </TableCell>
                     </TableRow>
                   )
@@ -274,6 +338,74 @@ export default function Student() {
           </Table>
         </div>
       </div>
+
+      {showUpdateForm && (
+        <div className="absolute w-full h-screen bg-white bg-opacity-75 flex justify-center items-center">
+          <div className="w-[40rem] h-fit p-4 rounded-xl bg-white border-2">
+            <form onSubmit={handleSubmitUpdate}>
+              <div className="flex justify-center">
+                <img className="w-[8rem]" src={image} alt="" />
+              </div>
+              <div className="my-2">
+                <Label>Image</Label>
+                <Input
+                  className="bg-white text-black"
+                  onChange={handleChangeImage}
+                  type="file"
+                  accept="image/*"
+                />
+              </div>
+              <div>
+                <Label>First Name</Label>
+                <Input
+                  defaultValue={studentDetails.studentFirst}
+                  onChange={handleInputChange}
+                  name="studentFirst"
+                  type="text"
+                />
+              </div>
+
+              <div>
+                <Label>Last Name</Label>
+                <Input
+                  defaultValue={studentDetails.studentLast}
+                  onChange={handleInputChange}
+                  name="studentLast"
+                  type="text"
+                />
+              </div>
+
+              <div className="w-full h-fit mb-[1rem] ">
+                <Label className="text-start block my-4">List of groups</Label>
+                <Label className="bg-green-500 p-1 rounded-sm text-white my-4 block">
+                  Current Group: {group}
+                </Label>
+                <Select onValueChange={handleSelectGroup}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Groups" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Group 1">Group 1</SelectItem>
+                    <SelectItem value="Group 2">Group 2</SelectItem>
+                    <SelectItem value="Group 3">Group 3</SelectItem>
+                    <SelectItem value="Group 4">Group 4</SelectItem>
+                    <SelectItem value="Group 5">Group 5</SelectItem>
+                    <SelectItem value="Group 6">Group 6</SelectItem>
+                    <SelectItem value="Group 7">Group 7</SelectItem>
+                    <SelectItem value="Group 8">Group 8</SelectItem>
+                    <SelectItem value="Group 9">Group 9</SelectItem>
+                    <SelectItem value="Group 10">Group 10</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-4">
+                <Button onClick={() => setShowUpdateForm(false)}>Cancel</Button>
+                <Button type="submit">Submit</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
