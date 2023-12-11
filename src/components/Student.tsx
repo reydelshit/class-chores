@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import {
@@ -20,6 +20,13 @@ import {
 import { Button } from './ui/button'
 import axios from 'axios'
 
+type StudentType = {
+  studentFirst: string
+  studentLast: string
+  image: string
+  groupAssigned: string
+}
+
 type EventChange =
   | React.ChangeEvent<HTMLInputElement>
   | React.ChangeEvent<HTMLTextAreaElement>
@@ -32,6 +39,48 @@ export default function Student() {
     studentFirst: '',
     studentLast: '',
   })
+
+  const [students, setStudents] = useState<StudentType[]>([])
+  const [search, setSearch] = useState('')
+  const [filteredGroups, setFilteredGroups] = useState('')
+
+  const getAllStudents = () => {
+    axios
+      .get(`${import.meta.env.VITE_CLASS_CHORES}/student.php`)
+      .then((res) => {
+        console.log(res.data, 'reports')
+        if (res.data.length > 0) {
+          setStudents(res.data)
+        }
+      })
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    console.log('dsadas')
+    e.preventDefault()
+    axios
+      .post(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        ...studentDetails,
+        image,
+        groupAssigned: group,
+      })
+      .then((res) => {
+        console.log(res.data)
+        getAllStudents()
+
+        setStudentDetails({
+          studentFirst: '',
+          studentLast: '',
+        })
+      })
+  }
+
+  useEffect(() => {
+    getAllStudents()
+  }, [])
 
   const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const data = new FileReader()
@@ -57,27 +106,14 @@ export default function Student() {
     setStudentDetails((values) => ({ ...values, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('dsadas')
-    e.preventDefault()
-    axios
-      .post(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        ...studentDetails,
-        image,
-        groupAssigned: group,
-      })
-      .then((res) => {
-        console.log(res.data)
-      })
+  const handleFilteredGroup = (value: string) => {
+    setFilteredGroups(value)
   }
 
   return (
     <div className="flex justify-center items-center w-full h-screen">
-      <div className="flex w-full justify-around gap-[10rem] p-4">
-        <div className="w-[40rem] bg-green-100 p-4 rounded-xl">
+      <div className="flex w-[80%] justify-around gap-[10rem] p-4">
+        <div className="w-[40rem] h-fit bg-green-100 p-4 rounded-xl">
           <form onSubmit={handleSubmit}>
             <div className="my-2">
               <Label>Image</Label>
@@ -92,6 +128,7 @@ export default function Student() {
             <div>
               <Label>First Name</Label>
               <Input
+                required
                 defaultValue={studentDetails.studentFirst}
                 onChange={handleInputChange}
                 name="studentFirst"
@@ -102,6 +139,7 @@ export default function Student() {
             <div>
               <Label>Last Name</Label>
               <Input
+                required
                 defaultValue={studentDetails.studentLast}
                 onChange={handleInputChange}
                 name="studentLast"
@@ -111,7 +149,7 @@ export default function Student() {
 
             <div className="w-full h-fit mb-[2rem] ">
               <Label className="text-start block my-4">List of groups</Label>
-              <Select onValueChange={handleSelectGroup}>
+              <Select required onValueChange={handleSelectGroup}>
                 <SelectTrigger>
                   <SelectValue placeholder="Groups" />
                 </SelectTrigger>
@@ -135,23 +173,75 @@ export default function Student() {
         </div>
 
         <div className="w-[80%]">
+          <div className="flex justify-between gap-4">
+            <Input
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-[20rem]"
+              placeholder="Search"
+            />
+            <Select required onValueChange={handleFilteredGroup}>
+              <SelectTrigger className="w-[20rem]">
+                <SelectValue placeholder="Groups" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All</SelectItem>
+                <SelectItem value="Group 1">Group 1</SelectItem>
+                <SelectItem value="Group 2">Group 2</SelectItem>
+                <SelectItem value="Group 3">Group 3</SelectItem>
+                <SelectItem value="Group 4">Group 4</SelectItem>
+                <SelectItem value="Group 5">Group 5</SelectItem>
+                <SelectItem value="Group 6">Group 6</SelectItem>
+                <SelectItem value="Group 7">Group 7</SelectItem>
+                <SelectItem value="Group 8">Group 8</SelectItem>
+                <SelectItem value="Group 9">Group 9</SelectItem>
+                <SelectItem value="Group 10">Group 10</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <Table>
-            <TableCaption>A list of your recent invoices.</TableCaption>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Invoice</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Method</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead></TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Group</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">INV001</TableCell>
-                <TableCell>Paid</TableCell>
-                <TableCell>Credit Card</TableCell>
-                <TableCell className="text-right">$250.00</TableCell>
-              </TableRow>
+              {students
+                .filter((stud) => {
+                  const matchesSearch =
+                    !search || stud.studentLast.includes(search)
+                  const matchesGroups =
+                    filteredGroups === 'All' ||
+                    stud.groupAssigned.includes(filteredGroups) ||
+                    filteredGroups === ''
+
+                  return matchesSearch && matchesGroups
+                })
+                .map((student, index) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell>
+                        <img
+                          className="w-[5rem]"
+                          src={student.image}
+                          alt="image"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        {student.studentFirst + ' ' + student.studentLast}
+                      </TableCell>
+
+                      <TableCell>{student.groupAssigned}</TableCell>
+                      <TableCell>
+                        <Button className="bg-green-500 mr-2">Edit</Button>
+                        <Button className="bg-red-500 ">Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
             </TableBody>
           </Table>
         </div>

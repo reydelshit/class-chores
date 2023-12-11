@@ -186,7 +186,8 @@ export default function App() {
       <div className="w-[20rem] ">
         <div className="h-[5rem] mt-[5rem]">
           <Link to="/students">
-            <Button className="w-full">Students</Button>
+            <Button className="w-full mb-2">Students</Button>
+            <Button className="w-full">View Students</Button>
           </Link>
         </div>
 
