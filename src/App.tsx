@@ -56,6 +56,7 @@ export default function App() {
   const [title, setTitle] = useState('' as any)
   const [selectInfo, setSelectInfo] = useState({} as any)
   const [scheduled, setScheduled] = useState<EventInput[]>([])
+  const [selectedGroup, setSelectedGroup] = useState('')
 
   const [patientID, setPatientID] = useState(0)
 
@@ -81,7 +82,10 @@ export default function App() {
     setAddAppointment(true)
   }
 
-  const handleDateSelect = (selectInfo: DateSelectArg, patient_id: number) => {
+  const handleDateSelect = (
+    selectInfo: DateSelectArg,
+    selectedGroup: string,
+  ) => {
     // setAddAppointment(true)
 
     // let title = prompt('Please enter a new title for your appointment')
@@ -105,13 +109,13 @@ export default function App() {
           start: selectInfo.startStr,
           end: selectInfo.endStr,
           allDay: selectInfo.allDay,
-          patient_id,
+          selectedGroup,
         })
         .then((res) => {
           console.log(res.data)
 
           if (res.data.status === 'success') {
-            handleNotification(patient_id, selectInfo.startStr)
+            handleNotification(selectedGroup, selectInfo.startStr, title)
             setTitle('')
             // sendSMStoPatient(patient_id, selectInfo.startStr)
           }
@@ -119,14 +123,18 @@ export default function App() {
     }
   }
 
-  const handleNotification = (patient_id: number, startDate: string) => {
+  const handleNotification = (
+    selectedGroup: string,
+    startDate: string,
+    title: string,
+  ) => {
     axios
       .post(`${import.meta.env.VITE_CLASS_CHORES}/notification.php`, {
-        receiver_id: patient_id,
+        receiver_id: parseInt(selectedGroup.split(' ')[1]),
         sender_id: localStorage.getItem('user'),
-        notification_message: `You have a new appointment on ${moment(
+        notification_message: `You have a new schedule on ${moment(
           startDate,
-        ).format('lll')}`,
+        ).format('lll')} ${title}`,
       })
       .then((res) => {
         console.log(res.data)
@@ -179,12 +187,13 @@ export default function App() {
 
   const handleSelectGroup = (value: string) => {
     setTitle(value)
+    setSelectedGroup(value)
   }
 
   const renderSidebar = () => {
     return (
       <div className="w-[20rem] ">
-        <div className="h-[5rem] mt-[5rem]">
+        <div className="h-[5rem] my-[5rem]">
           <Link to="/students">
             <Button className="w-full mb-2">Students</Button>
             <Button className="w-full">View Students</Button>
@@ -281,7 +290,9 @@ export default function App() {
                 Cancel
               </Button>
 
-              <Button onClick={() => handleDateSelect(selectInfo, patientID)}>
+              <Button
+                onClick={() => handleDateSelect(selectInfo, selectedGroup)}
+              >
                 Add Schedule
               </Button>
             </div>

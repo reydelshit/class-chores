@@ -32,8 +32,10 @@ type EventChange =
   | React.ChangeEvent<HTMLTextAreaElement>
 
 export default function Student() {
-  const [image, setImage] = useState('' as any)
-  const [group, setGroup] = useState('' as any)
+  const [image, setImage] = useState('')
+  const [group, setGroup] = useState('')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   const [studentDetails, setStudentDetails] = useState({
     studentFirst: '',
@@ -66,6 +68,9 @@ export default function Student() {
         ...studentDetails,
         image,
         groupAssigned: group,
+        type: 'student',
+        username,
+        password,
       })
       .then((res) => {
         console.log(res.data)
@@ -104,6 +109,16 @@ export default function Student() {
     const { name, value } = e.target
     console.log(name, value)
     setStudentDetails((values) => ({ ...values, [name]: value }))
+
+    if (name === 'studentFirst') {
+      const random = Math.floor(Math.random() * 1000)
+      setUsername(value.toLowerCase() + random)
+    }
+
+    if (name === 'studentLast') {
+      const random = Math.floor(Math.random() * 1000)
+      setPassword(value.toLowerCase() + random)
+    }
   }
 
   const handleFilteredGroup = (value: string) => {
@@ -147,7 +162,7 @@ export default function Student() {
               />
             </div>
 
-            <div className="w-full h-fit mb-[2rem] ">
+            <div className="w-full h-fit mb-[1rem] ">
               <Label className="text-start block my-4">List of groups</Label>
               <Select required onValueChange={handleSelectGroup}>
                 <SelectTrigger>
@@ -167,6 +182,19 @@ export default function Student() {
                 </SelectContent>
               </Select>
             </div>
+
+            {studentDetails.studentFirst.length > 0 && (
+              <div className="my-4 flex justify-between">
+                <div>
+                  <Label>Account</Label>
+                  <div className="flex flex-col">
+                    <Label>Username: {username}</Label>
+                    <Label>Password: {password}</Label>
+                  </div>
+                </div>
+                <Button>Export</Button>
+              </div>
+            )}
 
             <Button type="submit">Submit</Button>
           </form>
