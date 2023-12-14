@@ -322,7 +322,7 @@ export default function Student() {
                     <TableRow key={index}>
                       <TableCell>
                         <img
-                          className="w-[5rem]"
+                          className="w-[5rem] h-[5rem] object-cover"
                           src={student.image}
                           alt="image"
                         />
