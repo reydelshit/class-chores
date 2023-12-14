@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from './ui/button'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 type StudentType = {
   studentFirst: string
@@ -42,6 +43,8 @@ export default function Student() {
     studentFirst: '',
     studentLast: '',
   })
+
+  const navigate = useNavigate()
 
   const [students, setStudents] = useState<StudentType[]>([])
   const [search, setSearch] = useState('')
@@ -193,6 +196,7 @@ export default function Student() {
     <div className="flex justify-center items-center w-full h-[70vh] relative">
       <div className="flex w-[80%] justify-around gap-[10rem] p-4 ">
         <div className="w-[40rem] h-fit p-4 rounded-xl">
+          <Button onClick={() => navigate(-1)}>Go back</Button>
           <form onSubmit={handleSubmit}>
             <div className="my-2">
               <Label>Image</Label>
