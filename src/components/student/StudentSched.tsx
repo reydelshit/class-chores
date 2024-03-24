@@ -1,17 +1,16 @@
-import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { Button } from '../ui/button'
-import Notification from './Notification'
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import axios from 'axios'
 import moment from 'moment'
+import { useEffect, useState } from 'react'
+import { Button } from '../ui/button'
+import Notification from './Notification'
 
 type StudentType = {
   studentFirst: string
@@ -39,13 +38,17 @@ export default function StudentSched() {
   })
   const [showNotification, setShowNotification] = useState(false)
   const [schedule, setSchedule] = useState<ScheduleType[]>([])
-
-  //   parseInt(selectedGroup.split(' ')[1])
+  const secretKey = 'jedaya_secretkey'
 
   const fetchStudentData = () => {
+    const user_id = localStorage.getItem('chores_') as string
+
+    const bytes = CryptoJS.AES.decrypt(user_id.toString(), secretKey)
+    const plaintext = bytes.toString(CryptoJS.enc.Utf8)
+
     axios
       .get(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
-        params: { student_id: localStorage.getItem('chores') },
+        params: { student_id: plaintext },
       })
       .then((res: any) => {
         console.log(res.data)

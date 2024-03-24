@@ -28,7 +28,7 @@ import { Label } from './components/ui/label'
 import axios from 'axios'
 
 import moment from 'moment'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Header from './components/Header'
 // import DefaultProfile from '@/assets/default.jpg'
 type PatientType = {
@@ -64,6 +64,8 @@ export default function App() {
   const [scheduled, setScheduled] = useState<EventInput[]>([])
   const [selectedGroup, setSelectedGroup] = useState('')
 
+  const chores_token = localStorage.getItem('chores_token') as string
+  const navigate = useNavigate()
   const getSchedule = async () => {
     await axios
       .get(`${import.meta.env.VITE_CLASS_CHORES}/schedule.php`)
@@ -72,6 +74,12 @@ export default function App() {
         console.log(res.data)
       })
   }
+
+  useEffect(() => {
+    if (!chores_token) {
+      navigate('/login')
+    }
+  }, [])
 
   useEffect(() => {
     getSchedule()

@@ -1,60 +1,74 @@
 import axios from 'axios'
-import { Link } from 'react-router-dom'
-import { Input } from './ui/input'
+import CryptoJS from 'crypto-js'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
-import { useState } from 'react'
 
 export default function Login() {
-  const [loginDetails, setLoginDetails] = useState([])
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const [loginDetails, setLoginDetails] = useState({
+    username: '',
+    password: '',
+  })
+  const navigate = useNavigate()
+  const secretKey = 'jedaya_secretkey'
 
-  // if (!localStorage.getItem('dating_site_id')) {
-  //   window.location.href = '/home';
-  // }
+  const police_token = localStorage.getItem('class_token')
 
-  const defaultPassword = 'admin'
-  const defaultUsername = 'admin'
+  useEffect(() => {
+    if (police_token) {
+      window.location.href = '/'
+    }
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     const name = e.target.name
 
     setLoginDetails((values) => ({ ...values, [name]: value }))
+  }
 
-    if (name === 'username') {
-      setUsername(value)
-    }
+  const [errorInput, setErrorInput] = useState<string>('')
 
-    if (name === 'password') {
-      setPassword(value)
-    }
+  const encrypt = (encrypt: string) => {
+    const ciphertext = CryptoJS.AES.encrypt(encrypt, secretKey).toString()
+
+    localStorage.setItem('chores_token', ciphertext)
+  }
+
+  const encryptUser = (encrypt: string) => {
+    const ciphertext = CryptoJS.AES.encrypt(encrypt, secretKey).toString()
+
+    localStorage.setItem('chores_', ciphertext)
   }
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    if (username === defaultUsername || password === defaultPassword) {
-      localStorage.setItem('chores', '0')
-      localStorage.setItem('chores_type', 'admin')
-      window.location.href = '/'
-    } else {
-      axios
-        .get(`${import.meta.env.VITE_CLASS_CHORES}/login.php`, {
-          params: loginDetails,
-        })
-        .then((res) => {
-          // console.log('success')
-          localStorage.setItem('chores', res.data[0].student_id)
-          localStorage.setItem('chores_type', res.data[0].type)
+    if (!loginDetails.username || !loginDetails.password)
+      return setErrorInput('Please fill in all fields')
 
-          if (res.data[0].type === 'student') {
-            window.location.href = '/student/sched'
-          }
-
+    console.log(loginDetails.username, loginDetails.password)
+    axios
+      .get(`${import.meta.env.VITE_CLASS_CHORES}/login.php`, {
+        params: loginDetails,
+      })
+      .then((res) => {
+        if (res.data.length > 0) {
           console.log(res.data)
-        })
-    }
+          encrypt(res.data[0].type.toString())
+          encryptUser(res.data[0].user_id.toString())
+          localStorage.setItem('chores_reauth', '0')
+
+          if (res.data[0].type === 'admin') {
+            navigate('/')
+          } else {
+            navigate('/student/sched')
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error occurred during login:', error)
+      })
   }
 
   return (
@@ -66,26 +80,37 @@ export default function Login() {
           onSubmit={handleLogin}
           className="flex flex-col justify-center items-center bg-green-500 text-white p-5 rounded-lg shadow-lg w-[30rem]"
         >
-          <Input
-            type="text"
-            placeholder="Email"
-            className="mb-2 text-white placeholder:text-white"
-            name="username"
-            onChange={handleChange}
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            className="mb-2 text-white placeholder:text-white"
-            name="password"
-            onChange={handleChange}
-          />
-          <Button
-            className="w-[80%] bg-white text-green-500 hover:bg-white"
-            type="submit"
-          >
-            Login
-          </Button>
+          <div className="flex flex-col items-center justify-center gap-2 mt-5  w-[40rem] p-4 ">
+            <input
+              onChange={handleChange}
+              type="text"
+              placeholder="Username"
+              name="username"
+              className="p-2 border-2 rounded-md outline-none w-[20rem] text-black"
+            />
+            <input
+              onChange={handleChange}
+              type="password"
+              placeholder="Password"
+              name="password"
+              className="p-2 border-2 rounded-md outline-none w-[20rem] text-black"
+            />
+            <span>
+              <a href="/register">Create account</a>
+            </span>
+            <Button
+              type="submit"
+              className="p-2 bg-white  text-black rounded-md w-[10rem]"
+            >
+              Login
+            </Button>
+
+            {errorInput && (
+              <p className="text-primary-red border-2 bg-white p-2 rounded-md font-semibold">
+                {errorInput}
+              </p>
+            )}
+          </div>
         </form>
       </div>
     </div>

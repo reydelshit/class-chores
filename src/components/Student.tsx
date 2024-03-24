@@ -20,6 +20,8 @@ import {
 import { Button } from './ui/button'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import VerifyPassword from './VerifyPassword'
+import PasswordStrengthBar from 'react-password-strength-bar'
 
 type StudentType = {
   studentFirst: string
@@ -39,9 +41,14 @@ export default function Student() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
+  const [showReauth, setShowReauth] = useState(false)
+  const [storeDeleteID, setStoreDeleteID] = useState<number>(0)
+
   const [studentDetails, setStudentDetails] = useState({
     studentFirst: '',
     studentLast: '',
+    username: '',
+    password: '',
   })
 
   const navigate = useNavigate()
@@ -75,8 +82,6 @@ export default function Student() {
         image,
         groupAssigned: group,
         type: 'student',
-        username,
-        password,
       })
       .then((res) => {
         console.log(res.data)
@@ -112,16 +117,6 @@ export default function Student() {
     const { name, value } = e.target
     console.log(name, value)
     setStudentDetails((values) => ({ ...values, [name]: value }))
-
-    if (name === 'studentFirst') {
-      const random = Math.floor(Math.random() * 1000)
-      setUsername(value.toLowerCase() + random)
-    }
-
-    if (name === 'studentLast') {
-      const random = Math.floor(Math.random() * 1000)
-      setPassword(value.toLowerCase() + random)
-    }
   }
 
   const handleFilteredGroup = (value: string) => {
@@ -129,16 +124,25 @@ export default function Student() {
   }
 
   const handleDelete = (id: number) => {
-    axios
-      .delete(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
-        data: {
-          id,
-        },
-      })
-      .then((res) => {
-        console.log(res.data)
-        getAllStudents()
-      })
+    const reauthToken = localStorage.getItem('chores_reauth') as string
+
+    console.log(id)
+
+    if (reauthToken === '0') {
+      setShowReauth(true)
+      setStoreDeleteID(id)
+    } else {
+      axios
+        .delete(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
+          data: {
+            id,
+          },
+        })
+        .then((res) => {
+          console.log(res.data)
+          getAllStudents()
+        })
+    }
   }
 
   const handleShowsUpdateForm = (id: number) => {
@@ -194,6 +198,16 @@ export default function Student() {
 
   return (
     <div className="flex justify-center items-center w-full h-[70vh] relative">
+      {showReauth && (
+        <VerifyPassword
+          phpFile="student"
+          deleteIDColumn="id"
+          storeDeleteID={storeDeleteID}
+          setShowReauth={setShowReauth}
+          decrypt={getAllStudents}
+        />
+      )}
+
       <div className="flex w-[80%] justify-around gap-[10rem] p-4 ">
         <div className="w-[40rem] h-fit p-4 rounded-xl">
           <Button onClick={() => navigate(-1)}>Go back</Button>
@@ -251,25 +265,34 @@ export default function Student() {
               </Select>
             </div>
 
-            {username.length > 0 && (
-              <div className="my-4 flex justify-between bg-green-500 p-2 text-white rounded-lg">
-                <div id="divToPrint">
-                  <Label>Account</Label>
-                  <div className="flex flex-col">
-                    <Label>Username: {username}</Label>
-                    <Label>Password: {password}</Label>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleExport}
-                  className="bg-white text-green-500"
-                >
-                  Export
-                </Button>
-              </div>
-            )}
+            <div>
+              <Label>Username</Label>
+              <Input
+                required
+                onChange={handleInputChange}
+                name="username"
+                type="text"
+              />
+            </div>
 
-            <Button type="submit">Submit</Button>
+            <div>
+              <Label>Password</Label>
+              <Input
+                required
+                onChange={handleInputChange}
+                name="password"
+                type="password"
+              />
+            </div>
+
+            <PasswordStrengthBar
+              className="w-full my-4"
+              password={studentDetails.password}
+            />
+
+            <Button className="my-2" type="submit">
+              Submit
+            </Button>
           </form>
         </div>
 
