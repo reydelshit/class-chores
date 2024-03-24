@@ -9,9 +9,9 @@ import { Button } from './ui/button'
 type ChangeEvent = React.ChangeEvent<HTMLInputElement>
 
 export default function Register() {
-  const police_token = localStorage.getItem('police_token')
+  const class_token = localStorage.getItem('class_token')
 
-  if (police_token) {
+  if (class_token) {
     return <Navigate to="/" replace={true} />
   }
 

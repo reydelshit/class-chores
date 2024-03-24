@@ -56,7 +56,10 @@ export default function Login() {
         if (res.data.length > 0) {
           console.log(res.data)
           encrypt(res.data[0].type.toString())
-          encryptUser(res.data[0].user_id.toString())
+
+          if (res.data[0].user_id.toString()) {
+            encryptUser(res.data[0].user_id.toString())
+          }
           localStorage.setItem('chores_reauth', '0')
 
           if (res.data[0].type === 'admin') {

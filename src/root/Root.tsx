@@ -1,13 +1,20 @@
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import App from '@/App'
 import Header from '@/components/Header'
 
 export default function Root() {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  if (!localStorage.getItem('chores_token')) {
+    window.location.href = '/login'
+  }
+
   const handleLogout = () => {
-    localStorage.removeItem('chores')
-    localStorage.removeItem('chores_type')
+    localStorage.removeItem('chores_token')
+    localStorage.removeItem('chores_')
+    localStorage.removeItem('chores_reauth')
     window.location.href = '/login'
   }
   return (

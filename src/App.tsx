@@ -1,6 +1,3 @@
-import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import interactionPlugin, { EventDragStartArg } from '@fullcalendar/interaction'
 import {
   Select,
   SelectContent,
@@ -8,44 +5,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { DragEventHandler, useEffect, useState } from 'react'
 import {
-  EventApi,
   DateSelectArg,
+  EventApi,
+  EventChangeArg,
   EventClickArg,
   EventContentArg,
   formatDate,
-  EventChangeArg,
 } from '@fullcalendar/core'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import FullCalendar from '@fullcalendar/react'
+import { useEffect, useState } from 'react'
 
 import timeGridPlugin from '@fullcalendar/timegrid'
 
 import { EventInput } from '@fullcalendar/core'
-import { Input } from './components/ui/input'
 import { Button } from './components/ui/button'
+import { Input } from './components/ui/input'
 
-import { Label } from './components/ui/label'
 import axios from 'axios'
+import { Label } from './components/ui/label'
 
 import moment from 'moment'
 import { Link, useNavigate } from 'react-router-dom'
-import Header from './components/Header'
-// import DefaultProfile from '@/assets/default.jpg'
-type PatientType = {
-  patient_id: number
-  patient_name: string
-  patient_middlename: string
-  patient_lastname: string
-  patient_birthday: string
-  patient_age: number
-  patient_gender: string
-  patient_email: string
-  patient_phone: string
-  patient_type: string
-  patient_image: string
-  weight: string
-  height: string
-}
+import CryptoJS from 'crypto-js'
 
 export default function App() {
   const type = localStorage.getItem('chores_type')
@@ -64,8 +48,14 @@ export default function App() {
   const [scheduled, setScheduled] = useState<EventInput[]>([])
   const [selectedGroup, setSelectedGroup] = useState('')
 
-  const chores_token = localStorage.getItem('chores_token') as string
   const navigate = useNavigate()
+
+  const secretKey = 'jedaya_secretkey'
+  const chores_token = localStorage.getItem('chores_token') as string
+  const bytes2 = CryptoJS.AES.decrypt(chores_token.toString(), secretKey)
+
+  const plaintext2 = bytes2.toString(CryptoJS.enc.Utf8)
+
   const getSchedule = async () => {
     await axios
       .get(`${import.meta.env.VITE_CLASS_CHORES}/schedule.php`)
@@ -76,8 +66,8 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!chores_token) {
-      navigate('/login')
+    if (!chores_token && plaintext2 !== 'admin') {
+      window.location.href = '/login'
     }
   }, [])
 

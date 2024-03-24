@@ -23,7 +23,7 @@ export default function VerifyPassword({
   decrypt?: () => void
 }) {
   const [verifyPassword, setVerifyPassword] = useState<string>('')
-  const secretKey = ''
+  const secretKey = 'jedaya_secretkey'
   const [error, setError] = useState<string>('')
 
   const deleteTable = async () => {
@@ -49,7 +49,7 @@ export default function VerifyPassword({
   }
 
   const handleVerifyPassword = async () => {
-    const user_id = localStorage.getItem('chores_token') as string
+    const user_id = localStorage.getItem('chores_') as string
 
     const bytes = CryptoJS.AES.decrypt(user_id.toString(), secretKey)
     const plaintext = bytes.toString(CryptoJS.enc.Utf8)
@@ -59,6 +59,8 @@ export default function VerifyPassword({
         params: { user_id: plaintext, password: verifyPassword },
       })
       .then((res) => {
+        console.log(res.data)
+
         if (res.data.length > 0) {
           deleteTable()
         } else {

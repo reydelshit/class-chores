@@ -11,6 +11,8 @@ import moment from 'moment'
 import { useEffect, useState } from 'react'
 import { Button } from '../ui/button'
 import Notification from './Notification'
+import { useNavigate } from 'react-router-dom'
+import CryptoJS from 'crypto-js'
 
 type StudentType = {
   studentFirst: string
@@ -38,38 +40,53 @@ export default function StudentSched() {
   })
   const [showNotification, setShowNotification] = useState(false)
   const [schedule, setSchedule] = useState<ScheduleType[]>([])
+  const navigate = useNavigate()
+
   const secretKey = 'jedaya_secretkey'
+  const user_id = localStorage.getItem('chores_') as string
+  const chores_token = localStorage.getItem('chores_token') as string
+
+  const bytes = CryptoJS.AES.decrypt(user_id.toString(), secretKey)
+  const bytes2 = CryptoJS.AES.decrypt(chores_token.toString(), secretKey)
+
+  const plaintext = bytes.toString(CryptoJS.enc.Utf8)
+  const plaintext2 = bytes2.toString(CryptoJS.enc.Utf8)
 
   const fetchStudentData = () => {
-    const user_id = localStorage.getItem('chores_') as string
-
-    const bytes = CryptoJS.AES.decrypt(user_id.toString(), secretKey)
-    const plaintext = bytes.toString(CryptoJS.enc.Utf8)
+    console.log(plaintext, 'student')
 
     axios
-      .get(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
-        params: { student_id: plaintext },
+      .get(`${import.meta.env.VITE_CLASS_CHORES}/fetch-student.php`, {
+        params: { user_id: plaintext },
       })
       .then((res: any) => {
         console.log(res.data)
-        setStudentData(res.data[0])
-        setStudentDataObj(res.data[0])
 
-        if (res.data[0].groupAssigned) {
-          axios
-            .get(
-              `${import.meta.env.VITE_CLASS_CHORES}/fetchschedstudents.php`,
-              {
-                params: {
-                  group_name: res.data[0].groupAssigned,
-                },
-              },
-            )
-            .then((res) => {
-              console.log(res.data, 's')
-              setSchedule(res.data)
-            })
-        }
+        axios
+          .get(`${import.meta.env.VITE_CLASS_CHORES}/student.php`, {
+            params: { student_id: res.data[0].student_id },
+          })
+          .then((res: any) => {
+            setStudentData(res.data[0])
+            setStudentDataObj(res.data[0])
+
+            if (res.data[0].groupAssigned) {
+              fetchStudentSchedule(res.data[0].groupAssigned)
+            }
+          })
+      })
+  }
+
+  const fetchStudentSchedule = (assigned: string) => {
+    axios
+      .get(`${import.meta.env.VITE_CLASS_CHORES}/fetchschedstudents.php`, {
+        params: {
+          group_name: assigned,
+        },
+      })
+      .then((res) => {
+        console.log(res.data, 's')
+        setSchedule(res.data)
       })
   }
 
@@ -79,20 +96,29 @@ export default function StudentSched() {
     window.location.href = '/login'
   }
   useEffect(() => {
+    if (plaintext2 !== 'student') {
+      navigate('/')
+    }
+
     fetchStudentData()
   }, [])
   return (
     <div className="flex w-full  items-center flex-col h-screen">
       <div className="flex w-[80%] justify-between h-[4rem] py-[5rem] px-2">
         <div className="flex items-center gap-2">
-          <img
-            src={studentDataObj.image}
-            alt=""
-            className="w-[5rem] h-[5rem] rounded-full object-cover"
-          />
-          <h1 className="text-3xl font-bold">
-            Welcome, {studentDataObj.studentFirst} {studentDataObj.studentLast}
-          </h1>
+          {studentDataObj && (
+            <>
+              <img
+                src={studentDataObj.image}
+                alt=""
+                className="w-[5rem] h-[5rem] rounded-full object-cover"
+              />
+              <h1 className="text-3xl font-bold">
+                Welcome, {studentDataObj.studentFirst}{' '}
+                {studentDataObj.studentLast}
+              </h1>
+            </>
+          )}
         </div>
 
         <div>
