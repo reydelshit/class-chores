@@ -3,6 +3,7 @@ import CryptoJS from 'crypto-js'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
+import { Input } from './ui/input'
 
 export default function Login() {
   const [loginDetails, setLoginDetails] = useState({
@@ -13,6 +14,14 @@ export default function Login() {
   const secretKey = 'jedaya_secretkey'
 
   const police_token = localStorage.getItem('class_token')
+  const defaultRandomString = Math.random().toString(36).substring(7)
+  const [randomString, setRandomString] = useState<string>(defaultRandomString)
+  const [randomStringInput, setRandomStringInput] = useState<string>('')
+
+  const generateRandomString = () => {
+    const randomString = Math.random().toString(36).substring(7)
+    setRandomString(randomString)
+  }
 
   useEffect(() => {
     if (police_token) {
@@ -47,12 +56,20 @@ export default function Login() {
     if (!loginDetails.username || !loginDetails.password)
       return setErrorInput('Please fill in all fields')
 
-    console.log(loginDetails.username, loginDetails.password)
+    if (randomStringInput !== randomString) {
+      return setErrorInput('Verification failed. Please try again.')
+    }
+
+    // console.log(loginDetails.username, loginDetails.password)
     axios
       .get(`${import.meta.env.VITE_CLASS_CHORES}/login.php`, {
-        params: loginDetails,
+        params: {
+          username: loginDetails.username,
+          password: loginDetails.password,
+        },
       })
       .then((res) => {
+        console.log(res.data)
         if (res.data.length > 0) {
           console.log(res.data)
           encrypt(res.data[0].type.toString())
@@ -67,6 +84,8 @@ export default function Login() {
           } else {
             navigate('/student/sched')
           }
+        } else {
+          console.log(res.data)
         }
       })
       .catch((error) => {
@@ -98,6 +117,24 @@ export default function Login() {
               name="password"
               className="p-2 border-2 rounded-md outline-none w-[20rem] text-black"
             />
+
+            <div>
+              <div className="flex bg-green-100 text-black my-4 items-center justify-between rounded-md p-2">
+                <span className="font-semibold text-2xl tracking-[1.5rem]">
+                  {randomString}
+                </span>
+                <Button onClick={() => generateRandomString()}>Refresh</Button>
+              </div>
+
+              <Input
+                className="bg-white text-black"
+                type="text"
+                onChange={(e) => setRandomStringInput(e.target.value)}
+                placeholder="Verify"
+                required
+              />
+            </div>
+
             <span>
               <a href="/register">Create account</a>
             </span>
@@ -109,7 +146,7 @@ export default function Login() {
             </Button>
 
             {errorInput && (
-              <p className="text-primary-red border-2 bg-white p-2 rounded-md font-semibold">
+              <p className="text-red-500 border-2 bg-white p-2 rounded-md font-semibold">
                 {errorInput}
               </p>
             )}

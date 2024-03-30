@@ -20,7 +20,10 @@ export default function Register() {
   const [errorInput, setErrorInput] = useState<string>('')
   const [successfulLogin, setSuccessfulLogin] = useState<boolean>(false)
   const [seconds, setSeconds] = useState(5)
-  const [credentials, setCredentials] = useState([])
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: '',
+  })
   const navigate = useNavigate()
 
   const handleChange = (e: ChangeEvent) => {
@@ -51,7 +54,8 @@ export default function Register() {
       )
     axios
       .post(`${import.meta.env.VITE_CLASS_CHORES}/login.php`, {
-        ...credentials,
+        username: credentials.username,
+        password: credentials.password,
         type: 'admin',
       })
       .then((res: any) => {
