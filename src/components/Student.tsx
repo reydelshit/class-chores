@@ -37,17 +37,11 @@ type EventChange =
   | React.ChangeEvent<HTMLTextAreaElement>
 
 export default function Student() {
-  const secretKey = 'jedaya_secretkey'
   const chores_token = localStorage.getItem('chores_token') as string
-  const bytes2 = CryptoJS.AES.decrypt(chores_token.toString(), secretKey)
 
-  const plaintext2 = bytes2.toString(CryptoJS.enc.Utf8)
-
-  console.log(plaintext2)
-
-  if (plaintext2 === 'student') {
-    return (window.location.href = '/student/sched')
-  }
+  // if (chores_token === 'student') {
+  //   return (window.location.href = '/student/sched')
+  // }
   const [image, setImage] = useState('')
   const [group, setGroup] = useState('')
 

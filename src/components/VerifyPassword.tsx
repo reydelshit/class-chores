@@ -51,12 +51,9 @@ export default function VerifyPassword({
   const handleVerifyPassword = async () => {
     const user_id = localStorage.getItem('chores_') as string
 
-    const bytes = CryptoJS.AES.decrypt(user_id.toString(), secretKey)
-    const plaintext = bytes.toString(CryptoJS.enc.Utf8)
-
     await axios
       .get(`${import.meta.env.VITE_CLASS_CHORES}/reauth.php`, {
-        params: { user_id: plaintext, password: verifyPassword },
+        params: { user_id: user_id, password: verifyPassword },
       })
       .then((res) => {
         console.log(res.data)

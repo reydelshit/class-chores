@@ -13,6 +13,16 @@ import {
   EventContentArg,
   formatDate,
 } from '@fullcalendar/core'
+
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import FullCalendar from '@fullcalendar/react'
@@ -29,13 +39,9 @@ import { Label } from './components/ui/label'
 
 import moment from 'moment'
 import { Link, useNavigate } from 'react-router-dom'
-import CryptoJS from 'crypto-js'
 
 export default function App() {
-  const type = localStorage.getItem('chores_type')
-  if (type === 'student') {
-    return (window.location.href = '/student/sched')
-  }
+  const chores_type = localStorage.getItem('chores_type')
 
   const [state, setState] = useState({
     weekendsVisible: true,
@@ -49,12 +55,7 @@ export default function App() {
   const [selectedGroup, setSelectedGroup] = useState('')
 
   const navigate = useNavigate()
-
-  const secretKey = 'jedaya_secretkey'
   const chores_token = localStorage.getItem('chores_token') as string
-  const bytes2 = CryptoJS.AES.decrypt(chores_token.toString(), secretKey)
-
-  const plaintext2 = bytes2.toString(CryptoJS.enc.Utf8)
 
   const getSchedule = async () => {
     await axios
@@ -66,8 +67,12 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!chores_token && plaintext2 !== 'admin') {
+    if (!chores_token && chores_type !== 'admin') {
       window.location.href = '/login'
+    }
+
+    if (chores_type === 'student') {
+      window.location.href = '/student/sched'
     }
   }, [])
 
@@ -194,7 +199,7 @@ export default function App() {
 
   const renderSidebar = () => {
     return (
-      <div className="w-[20rem] ">
+      <div className="w-[25rem] ">
         <div className="h-[5rem] my-[5rem]">
           <Link to="/students">
             <Button className="w-full mb-2">Students</Button>
@@ -206,9 +211,18 @@ export default function App() {
           <span className="block text-base font-semibold">
             All Schedule ({state.currentEvents.length})
           </span>
-          <span className="text-md">
-            {state.currentEvents.map(renderSidebarEvent)}
-          </span>
+
+          <Table>
+            <TableCaption>A list of your recent invoices.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Event</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>{state.currentEvents.map(renderSidebarEvent)}</TableBody>
+          </Table>
+          <span className="text-md"></span>
         </div>
       </div>
     )
@@ -225,16 +239,17 @@ export default function App() {
 
   const renderSidebarEvent = (event: EventApi) => {
     return (
-      <div className="flex gap-1" key={event.id}>
-        <span>
+      <TableRow key={event.id}>
+        <TableCell className="font-bold">
+          {' '}
           {formatDate(event.start!, {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
           })}
-        </span>
-        <p className="font-bold">{event.title}</p>
-      </div>
+        </TableCell>
+        <TableCell>{event.title}</TableCell>
+      </TableRow>
     )
   }
 

@@ -11,9 +11,8 @@ export default function Login() {
     password: '',
   })
   const navigate = useNavigate()
-  const secretKey = 'jedaya_secretkey'
 
-  const police_token = localStorage.getItem('class_token')
+  const chores_token = localStorage.getItem('class_token')
   const defaultRandomString = Math.random().toString(36).substring(7)
   const [randomString, setRandomString] = useState<string>(defaultRandomString)
   const [randomStringInput, setRandomStringInput] = useState<string>('')
@@ -24,7 +23,7 @@ export default function Login() {
   }
 
   useEffect(() => {
-    if (police_token) {
+    if (chores_token) {
       window.location.href = '/'
     }
   }, [])
@@ -37,18 +36,6 @@ export default function Login() {
   }
 
   const [errorInput, setErrorInput] = useState<string>('')
-
-  const encrypt = (encrypt: string) => {
-    const ciphertext = CryptoJS.AES.encrypt(encrypt, secretKey).toString()
-
-    localStorage.setItem('chores_token', ciphertext)
-  }
-
-  const encryptUser = (encrypt: string) => {
-    const ciphertext = CryptoJS.AES.encrypt(encrypt, secretKey).toString()
-
-    localStorage.setItem('chores_', ciphertext)
-  }
 
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -72,20 +59,22 @@ export default function Login() {
         console.log(res.data)
         if (res.data.length > 0) {
           console.log(res.data)
-          encrypt(res.data[0].type.toString())
 
-          if (res.data[0].user_id.toString()) {
-            encryptUser(res.data[0].user_id.toString())
-          }
+          localStorage.setItem('chores_', res.data[0].user_id)
           localStorage.setItem('chores_reauth', '0')
+          localStorage.setItem('chores_type', res.data[0].type)
 
           if (res.data[0].type === 'admin') {
             navigate('/')
           } else {
             navigate('/student/sched')
+            localStorage.setItem('seed_phrase', '')
           }
         } else {
           console.log(res.data)
+          setErrorInput(
+            'Invalid username or password entered. Please try again. or no data found.',
+          )
         }
       })
       .catch((error) => {
